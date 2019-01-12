@@ -126,30 +126,36 @@ public class RNShareLocalManager extends ReactContextBaseJavaModule implements A
     @ReactMethod
     public void pictures(String winTitle,String subject,String message,ReadableArray imagesFile,ReadableArray component, Callback callback) {
         this.callback = callback;
-        ArrayList<Uri> uris = new ArrayList<Uri>();
-        for(int i=0; i<imagesFile.size();i++){
-            uris.add(Uri.parse(imagesFile.getString(i)));
-        }
-        Intent intent=new Intent(Intent.ACTION_SEND_MULTIPLE);
-        intent.putExtra(Intent.EXTRA_SUBJECT,subject);
-        intent.putExtra(Intent.EXTRA_TEXT, message);
-        intent.putExtra(Intent.EXTRA_STREAM, uris);
-        intent.putExtra ("Kdescription", message);
-        intent.setType("image/*");
+		ArrayList<Uri> uris = new ArrayList<Uri>();
+		for (int i = 0; i < imagesFile.size(); i++) {
+			uris.add(Uri.parse(imagesFile.getString(i)));
+		}
+		Intent intent = new Intent(Intent.ACTION_SEND);
+		intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+		intent.putExtra(Intent.EXTRA_TEXT, message);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+			StrictMode.setVmPolicy(builder.build());
+		}
+		if (uris.size() > 0) {
+			intent.putExtra(Intent.EXTRA_STREAM, uris.get(0));
+		}
+		intent.putExtra("Kdescription", message);
+		intent.setType("image/*");
 
-        Intent chooser = Intent.createChooser(intent, winTitle);
-        chooser.addCategory(Intent.CATEGORY_DEFAULT);
+		Intent chooser = Intent.createChooser(intent, winTitle);
+		chooser.addCategory(Intent.CATEGORY_DEFAULT);
 
-        //是否指定App打开
-        if(component != null && component.size() == 2) {
-            intent.setComponent(new ComponentName(component.getString(0), component.getString(1)));
-        }
+		//是否指定App打开
+		if (component != null && component.size() == 2) {
+			intent.setComponent(new ComponentName(component.getString(0), component.getString(1)));
+		}
 
-        try {
-            getCurrentActivity().startActivityForResult(chooser, SHARE_REQUEST);
-        }catch (Exception e){
-            System.out.println(e);
-        }
+		try {
+			getCurrentActivity().startActivityForResult(chooser, SHARE_REQUEST);
+		} catch (Exception e) {
+			System.out.println(e);
+		}
     }
 
     @ReactMethod
